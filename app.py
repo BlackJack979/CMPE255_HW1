@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-
-
 @st.cache_resource
 def load_data():
     return pd.read_csv('nco2.csv')
