@@ -1,19 +1,20 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-# Load the dataset
+
+
 @st.cache_resource
 def load_data():
     return pd.read_csv('nco2.csv')
 
+
 data = load_data()
 
-# Sidebar - User Inputs
+
 st.sidebar.header('Select Features')
 
-# Select Insight
+
 insight_choices = {
     'CO2 Emissions': 'CO2_Emissions_g_km_',
     'Fuel Consumption Combined': 'Fuel_Consumption_Comb__L_100_km_',
@@ -22,20 +23,24 @@ insight_choices = {
 }
 insight = st.sidebar.selectbox('Select Insight:', list(insight_choices.keys()))
 
-# Select Graph Type
-graph_types = ['Bar Graph', 'Histogram', 'Scatter Plot', 'Box Plot']
+
+graph_types = ['Bar Graph', 'Histogram', 'Scatter Plot', 'Box Plot', 'Violin Plot']
 graph_type = st.sidebar.selectbox('Select Graph Type:', graph_types)
 
-# Based on the selected graph type, enable or disable the attribute selection
+
 is_attribute_selection_enabled = graph_type != 'Histogram'
 
-# Select attribute for analysis - X-axis
-attributes = ['Make', 'Transmission', 'Engine_Size_L_', 'Cylinders', 'Model'] if is_attribute_selection_enabled else ['N/A']
-attribute = st.sidebar.selectbox('Select Attribute for X-axis:', attributes, disabled=not is_attribute_selection_enabled)
 
-# If 'Model' is the attribute, handle the logic for selecting a make and models
+attributes = ['Make', 'Transmission', 'Engine_Size_L_', 'Cylinders',
+              'Model'] if is_attribute_selection_enabled else ['N/A']
+attribute = st.sidebar.selectbox('Select Attribute for X-axis:', attributes,
+                                 disabled=not is_attribute_selection_enabled)
+
+
 if attribute == 'Model':
-    selected_make = st.sidebar.selectbox('Select Make for Model Analysis:', sorted(data['Make'].unique().tolist()))
+    selected_make = st.sidebar.selectbox('Select Make for Model Analysis:',
+                                         sorted(
+                                             data['Make'].unique().tolist()))
     data = data[data['Make'] == selected_make]
     model_options = sorted(data['Model'].unique().tolist())
     selected_models = st.sidebar.multiselect('Select Model(s):', model_options)
@@ -45,37 +50,40 @@ if attribute == 'Model':
     data = data[data['Model'].isin(selected_models)]
 
 
-# Determine if the attribute selection is relevant for the chosen graph type
-is_attribute_relevant = graph_type in ['Bar Graph', 'Scatter Plot','Box Plot']
-
-# Format the title based on the selections
-if is_attribute_relevant:
-    title_text = f"{graph_type} for {insight} by {attribute}"
-else:
-    title_text = f"{graph_type} for {insight}"
-
+title_text = f"{graph_type} for {insight} by {attribute}" if is_attribute_selection_enabled else f"{graph_type} for {insight}"
 st.title(title_text)
 
-# Plotting function
+
+# Plotting function using Plotly
 def plot_graph(data, x_attribute, y_attribute, graph_type):
-    fig, ax = plt.subplots(figsize=(10, 5))
+    color_continuous_scale = px.colors.sequential.Viridis
+    color_discrete_sequence = px.colors.qualitative.Set2
+
     if graph_type == 'Bar Graph':
-        sns.barplot(x=x_attribute, y=y_attribute, data=data, ax=ax)
+        fig = px.bar(data, x=x_attribute, y=y_attribute, title=title_text,
+                     color=x_attribute,
+                     color_continuous_scale=color_continuous_scale)
     elif graph_type == 'Histogram':
-        sns.histplot(data[data[y_attribute].notnull()][y_attribute], kde=True, bins=30, ax=ax)
+        fig = px.histogram(data, x=y_attribute, nbins=30, title=title_text,
+                           color_discrete_sequence=color_discrete_sequence)
     elif graph_type == 'Scatter Plot':
-        sns.scatterplot(x=x_attribute, y=y_attribute, data=data, ax=ax)
+        fig = px.scatter(data, x=x_attribute, y=y_attribute, title=title_text,
+                         color=x_attribute,
+                         color_continuous_scale=color_continuous_scale)
     elif graph_type == 'Box Plot':
-        sns.boxplot(x=x_attribute, y=y_attribute, data=data, ax=ax)
+        fig = px.box(data, x=x_attribute, y=y_attribute, title=title_text,
+                     color=x_attribute,
+                     color_discrete_sequence=color_discrete_sequence)
 
-    plt.xticks(rotation=90)
-    plt.tight_layout()
-    st.pyplot(fig)
+    elif graph_type == 'Violin Plot':
+        fig = px.violin(data, x=x_attribute, y=y_attribute, box=True,
+                        points="all",color=x_attribute,
+                        title=f"{graph_type} for {y_attribute} by {x_attribute}")
 
-# For histograms, use the insight choice directly without an X-axis attribute
+    st.plotly_chart(fig, use_container_width=True)
+
+# Execute plotting
 if graph_type == 'Histogram':
     plot_graph(data, 'N/A', insight_choices[insight], graph_type)
 else:
     plot_graph(data, attribute, insight_choices[insight], graph_type)
-
-
