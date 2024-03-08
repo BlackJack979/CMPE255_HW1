@@ -19,7 +19,8 @@ insight_choices = {
     'Fuel Consumption City': 'Fuel_Consumption_City__L_100_km_',
     'Fuel Consumption Highway': 'Fuel_Consumption_Hwy__L_100_km_'
 }
-insight = st.sidebar.selectbox('Select Insight:', list(insight_choices.keys()))
+insight = st.sidebar.selectbox('Select Category:',
+                               list(insight_choices.keys()))
 
 
 graph_types = ['Bar Graph', 'Histogram', 'Scatter Plot', 'Box Plot', 'Violin Plot']
