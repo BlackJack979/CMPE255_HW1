@@ -59,25 +59,25 @@ def plot_graph(data, x_attribute, y_attribute, graph_type):
     color_discrete_sequence = px.colors.qualitative.Set2
 
     if graph_type == 'Bar Graph':
-        fig = px.bar(data, x=x_attribute, y=y_attribute, title=title_text,
+        fig = px.bar(data, x=x_attribute, y=y_attribute,
                      color=x_attribute,
                      color_continuous_scale=color_continuous_scale)
     elif graph_type == 'Histogram':
-        fig = px.histogram(data, x=y_attribute, nbins=30, title=title_text,
+        fig = px.histogram(data, x=y_attribute, nbins=30,
                            color_discrete_sequence=color_discrete_sequence)
     elif graph_type == 'Scatter Plot':
-        fig = px.scatter(data, x=x_attribute, y=y_attribute, title=title_text,
+        fig = px.scatter(data, x=x_attribute, y=y_attribute,
                          color=x_attribute,
                          color_continuous_scale=color_continuous_scale)
     elif graph_type == 'Box Plot':
-        fig = px.box(data, x=x_attribute, y=y_attribute, title=title_text,
+        fig = px.box(data, x=x_attribute, y=y_attribute,
                      color=x_attribute,
                      color_discrete_sequence=color_discrete_sequence)
 
     elif graph_type == 'Violin Plot':
         fig = px.violin(data, x=x_attribute, y=y_attribute, box=True,
-                        points="all",color=x_attribute,
-                        title=f"{graph_type} for {y_attribute} by {x_attribute}")
+                        points="all",color=x_attribute
+                        )
 
     st.plotly_chart(fig, use_container_width=True)
 
